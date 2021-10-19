@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  blacklist:
+    image: "redis:6.2.5-alpine"
+    ports:
+      - "6379:6379"
+    volumes:
+      - /docker/host/dir:/data
+  auth:
+    build: .
+    ports:
+      - "50000:50000"
