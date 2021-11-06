@@ -38,13 +38,13 @@ func init() {
 	}
 }
 
-func SignString(userID string, userType int, emailAddress string) (string, error) {
+func SignString(userID string, userType int, emailAddress string, duration time.Time) (string, error) {
 	claims := CustomClaims{
 		userID,
 		userType,
 		emailAddress,
 		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(15 * time.Minute)),
+			ExpiresAt: jwt.NewNumericDate(duration),
 			IssuedAt: jwt.NewNumericDate(time.Now()),
 			Issuer: "OTW-Auth-Server",
 			Subject: userID,

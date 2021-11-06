@@ -60,7 +60,7 @@ func GetToken() func(rw http.ResponseWriter, r *http.Request) {
 		// 	return
 		// }
 
-		token, err := helpers.SignString(user.ID, user.UserType, loginInfo.EmailAddress)
+		token, err := helpers.SignString(user.ID, user.UserType, loginInfo.EmailAddress, time.Now().Add(15 * time.Minute))
 		if err != nil {			
 			rw.WriteHeader(http.StatusConflict)
 			json.NewEncoder(rw).Encode(map[string]interface{}{
@@ -71,13 +71,34 @@ func GetToken() func(rw http.ResponseWriter, r *http.Request) {
 		}
 
 		user.Token = token
-		cookie := http.Cookie{
+		
+		jwtTokenCookie := http.Cookie{
 			Name: "jwt-token",
 			Value: token,
 			HttpOnly: true,
 			Expires: time.Now().Add(time.Minute * 15),
+		}		
+
+		refreshToken, err := helpers.SignString(user.ID, user.UserType, loginInfo.EmailAddress, time.Now().Add(24 * time.Hour))
+		if err != nil {			
+			rw.WriteHeader(http.StatusConflict)
+			json.NewEncoder(rw).Encode(map[string]interface{}{
+				"error": "Internal error",
+				"message": "There was an error while processing your request. Please try again later",
+			})
+			return
 		}
-		http.SetCookie(rw, &cookie)
+
+		refreshTokenCookie := http.Cookie {
+			Name: "refresh-token",
+			Value: refreshToken,
+			HttpOnly: true,
+			Expires: time.Now().Add(time.Hour * 24),
+		}
+
+		http.SetCookie(rw, &jwtTokenCookie)
+		http.SetCookie(rw, &refreshTokenCookie)
+		
 		json.NewEncoder(rw).Encode(&user)
 	}
 }
@@ -93,7 +114,7 @@ func RefreshToken() func(rw http.ResponseWriter, r *http.Request) {
 
 			if err == redis.Nil {
 				
-				newSignedString, err := helpers.SignString("userID", 0, "userEmailAddress")
+				newSignedString, err := helpers.SignString("userID", 0, "userEmailAddress", time.Now().Add(time.Minute * 15))
 
 				if err != nil {
 					panic("err")

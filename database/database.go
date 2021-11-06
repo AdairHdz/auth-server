@@ -32,7 +32,7 @@ func Query(emailAddress string, user *entity.User) (err error) {
 	stmt, err := db.Prepare("SELECT users.id as user_id, users.names, users.lastname," +
 	"states.id as state_id," +
 	"accounts.email_address, accounts.user_type, accounts.verified, accounts.password," +
-    "IF(accounts.user_type = 0, (SELECT id from otw.service_providers WHERE user_id = users.id), (SELECT id from otw.service_requesters WHERE user_id = users.id)) AS id" +
+    "IF(accounts.user_type = 1, (SELECT id from otw.service_providers WHERE user_id = users.id), (SELECT id from otw.service_requesters WHERE user_id = users.id)) AS id" +
 	" from otw.users" +
 	" inner join otw.states on states.id = users.state_id" +
     " inner join otw.accounts on users.id = accounts.user_id" +
