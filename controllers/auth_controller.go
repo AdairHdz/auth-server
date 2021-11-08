@@ -51,14 +51,14 @@ func GetToken() func(rw http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// if !user.Verified {			
-		// 	rw.WriteHeader(http.StatusUnauthorized)
-		// 	json.NewEncoder(rw).Encode(map[string]interface{}{
-		// 		"error": "Non-verified account",
-		// 		"message": "It looks like you have not verified your account. Please check your email inbox",
-		// 	})
-		// 	return
-		// }
+		if !user.Verified {			
+			rw.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(rw).Encode(map[string]interface{}{
+				"error": "Non-verified account",
+				"message": "It looks like you have not verified your account. Please check your email inbox",
+			})
+			return
+		}
 
 		token, err := helpers.SignString(user.ID, user.UserType, loginInfo.EmailAddress, time.Now().Add(15 * time.Minute))
 		if err != nil {			
